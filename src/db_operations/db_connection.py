@@ -13,6 +13,7 @@ from src.log_info import setup_logging
 load_dotenv()
 setup_logging()
 
+
 def create_db_engine():
     """
     Sets up the database engine using environment variables.
@@ -24,10 +25,14 @@ def create_db_engine():
     DB_NAME = os.getenv("DB_NAME")
 
     if not all([DB_USER, DB_PASSWORD, DB_NAME]):
-        logging.critical("Missing required database credentials in environment variables.")
+        logging.critical(
+            "Missing required database credentials in environment variables."
+        )
         sys.exit("Missing required database credentials in environment variables.")
 
-    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DATABASE_URL = (
+        f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
     logging.info(f"Connecting to database at: {DATABASE_URL}")
 
     try:
@@ -39,12 +44,14 @@ def create_db_engine():
         logging.critical(f"Database connection failed: {e}")
         sys.exit(f"Database connection failed: {e}")
 
+
 def create_session(engine):
     """
     Creates a new SQLAlchemy session.
     """
     logging.info("Creating a new database session.")
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)()
+
 
 def init_db(engine):
     """
@@ -56,6 +63,7 @@ def init_db(engine):
 
     # Create the view after creating the tables
     create_view(engine)
+
 
 def create_view(engine):
     """Creates a view in the database if it doesn't already exist."""

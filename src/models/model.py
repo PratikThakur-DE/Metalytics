@@ -14,6 +14,7 @@ from src.db_operations.models import ModelMetadata
 
 setup_logging()
 
+
 class Model:
     def __init__(self, tickers: list[str]) -> None:
         self.tickers = tickers
@@ -29,23 +30,28 @@ class Model:
         try:
             twelve_hours_ago = datetime.utcnow() - timedelta(hours=12)
 
-            query = text(f"""
+            query = text(
+                f"""
                 SELECT metal, price, timestamp
                 FROM precious_metals_prices_view
                 WHERE timestamp >= :twelve_hours_ago
                 AND metal IN :tickers
-            """)
+            """
+            )
 
-            results = session.execute(query, {"twelve_hours_ago": twelve_hours_ago, "tickers": tuple(self.tickers)}).fetchall()
+            results = session.execute(
+                query,
+                {"twelve_hours_ago": twelve_hours_ago, "tickers": tuple(self.tickers)},
+            ).fetchall()
 
             if not results:
                 logging.warning("No data fetched from the view.")
                 return pd.DataFrame()  # Return empty dataframe if no results
 
             data = pd.DataFrame(results, columns=["metal", "price", "timestamp"])
-            data['timestamp'] = pd.to_datetime(data['timestamp'])
-            data.set_index('timestamp', inplace=True)
-            data = data.pivot(columns='metal', values='price')
+            data["timestamp"] = pd.to_datetime(data["timestamp"])
+            data.set_index("timestamp", inplace=True)
+            data = data.pivot(columns="metal", values="price")
 
             logging.info("Data fetched successfully from the view.")
             return data
@@ -63,30 +69,32 @@ class Model:
             fitted_params = model.get_fitted_params()
             logging.info(f"Fitted parameters for {ticker}: {fitted_params}")
 
-            order = self.arima_order  # This should hold the order you used, e.g., (1, 1, 0)
-            
+            order = (
+                self.arima_order
+            )  # This should hold the order you used, e.g., (1, 1, 0)
+
             # Extract parameters
             parameters = {
-                'intercept': fitted_params.get("intercept"),
-                'ar.L1': fitted_params.get("ar.L1"),
-                'sigma2': fitted_params.get("sigma2"),
-                'aic': fitted_params.get("aic"),
-                'bic': fitted_params.get("bic"),
-                'hqic': fitted_params.get("hqic"),
+                "intercept": fitted_params.get("intercept"),
+                "ar.L1": fitted_params.get("ar.L1"),
+                "sigma2": fitted_params.get("sigma2"),
+                "aic": fitted_params.get("aic"),
+                "bic": fitted_params.get("bic"),
+                "hqic": fitted_params.get("hqic"),
                 # Add other relevant keys here
             }
-            
+
             # Create a new ModelMetadata entry
             new_metadata = ModelMetadata(
                 metal=ticker,
                 hyperparameters={"p": order[0], "d": order[1], "q": order[2]},
                 parameters=parameters,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
             )
 
             session.add(new_metadata)
             logging.info(f"Model metadata for {ticker} added to session.")
-        
+
         except Exception as e:
             logging.error(f"Error while saving model metadata for {ticker}: {e}")
 
@@ -106,7 +114,11 @@ class Model:
                     logging.info(f"Dataset for {ticker}: {dataset}")
 
                     try:
-                        model = ARIMA(order=self.arima_order, with_intercept=True, suppress_warnings=True)
+                        model = ARIMA(
+                            order=self.arima_order,
+                            with_intercept=True,
+                            suppress_warnings=True,
+                        )
                         model.fit(dataset)
                         self.models[ticker] = model
                         logging.info(f"Trained model for {ticker}.")
@@ -118,14 +130,18 @@ class Model:
                         logging.error(f"Error training model for {ticker}: {e}")
 
                 else:
-                    logging.warning(f"No available data to train model for {ticker}. Dataset is empty or incorrectly shaped.")
+                    logging.warning(
+                        f"No available data to train model for {ticker}. Dataset is empty or incorrectly shaped."
+                    )
             else:
                 logging.warning(f"{ticker} not found in the fetched data.")
 
         try:
             # Commit the session
             session.commit()
-            logging.info("Session committed successfully. Model metadata should be saved.")
+            logging.info(
+                "Session committed successfully. Model metadata should be saved."
+            )
         except Exception as e:
             logging.error(f"Failed to commit the session: {e}")
             session.rollback()

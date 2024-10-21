@@ -18,6 +18,7 @@ API_URL = "https://api.metalpriceapi.com/v1/latest"
 BASE_CURRENCY = "EUR"
 CURRENCIES = "XAU,XAG,XPT,XPD"
 
+
 def fetch_metal_prices() -> Dict[str, float]:
     """
     Fetches the latest metal prices from the MetalPrice API.
@@ -34,7 +35,7 @@ def fetch_metal_prices() -> Dict[str, float]:
         "base": BASE_CURRENCY,
         "currencies": CURRENCIES,
     }
-    
+
     logging.info(f"Sending request to {API_URL} with params: {params}")
 
     try:
@@ -42,21 +43,22 @@ def fetch_metal_prices() -> Dict[str, float]:
         response = requests.get(API_URL, params=params)
         response.raise_for_status()  # Raises an HTTPError for bad responses
         logging.info(f"Received response status: {response.status_code}")
-        
+
         # Log the response JSON data
         data = response.json()
         logging.info(f"Response data: {data}")
-        
+
         if data.get("success"):
             logging.info("Successfully fetched metal prices.")
             return data.get("rates")
         else:
-            error_message = data.get('error', 'Unknown error')
+            error_message = data.get("error", "Unknown error")
             logging.error(f"API Error: {error_message}")
             raise Exception(f"API Error: {error_message}")
     except requests.exceptions.RequestException as e:
         logging.error(f"HTTP Error: {e}")
         raise  # Re-raise the exception to stop execution
+
 
 def load_data_into_db() -> None:
     """
@@ -82,7 +84,7 @@ def load_data_into_db() -> None:
             if price is not None:
                 # Strip the 'EUR' prefix from the metal code
                 metal_code = metal.replace("EUR", "")
-                
+
                 # Create a new PreciousMetalPrice entry
                 metal_price = PreciousMetalPrice(
                     metal=metal_code, price=price, timestamp=datetime.datetime.utcnow()

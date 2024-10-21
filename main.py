@@ -4,6 +4,7 @@ from src.data_ingestion.data_loader import load_data_into_db
 from src.models.model import Model
 from src.log_info import setup_logging
 
+
 def main():
     setup_logging()
 
@@ -47,6 +48,7 @@ def main():
         logging.error(f"Error saving trained models: {e}")
 
     logging.info("Process completed successfully.")
+
 
 if __name__ == "__main__":
     main()
