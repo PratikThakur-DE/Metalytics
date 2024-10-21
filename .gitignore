@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.coverage
+*.cover
+*.py,cover
+nosetests.xml
+coverage.xml
+*.log
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# virtualenv
+venv/
+
+# IDEs and editors
+.vscode/
+
+# Data folder
+data/
+
+# Secrets
+*.env
+*.env.*
+
+# Docker-related files
+Dockerfile
+.dockerignore
+docker-compose.yml
