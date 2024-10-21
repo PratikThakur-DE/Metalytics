@@ -1,10 +1,11 @@
 import pytest
-from src.db_operations.models import Base
-from src.data_ingestion.data_loader import fetch_metal_prices, load_data_into_db
-from src.db_operations.db_connection import create_db_engine
+
 from unittest.mock import patch
 from sqlalchemy.orm import sessionmaker
 
+from src.db_operations.models import Base
+from src.data_ingestion.data_loader import fetch_metal_prices, load_data_into_db
+from src.db_operations.db_connection import create_db_engine
 
 @pytest.fixture
 def setup_database():

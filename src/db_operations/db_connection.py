@@ -2,10 +2,11 @@ import os
 import sys
 import logging
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, text, Engine
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
 from dotenv import load_dotenv
+
 from models import Base
 from src.log_info import setup_logging
 
@@ -14,9 +15,15 @@ load_dotenv()
 setup_logging()
 
 
-def create_db_engine():
+def create_db_engine() -> 'Engine':
     """
     Sets up the database engine using environment variables.
+
+    Returns:
+        Engine: A SQLAlchemy engine instance connected to the database.
+
+    Raises:
+        SystemExit: If required database credentials are missing or if the connection fails.
     """
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -45,17 +52,26 @@ def create_db_engine():
         sys.exit(f"Database connection failed: {e}")
 
 
-def create_session(engine):
+def create_session(engine) -> 'Session':
     """
     Creates a new SQLAlchemy session.
+
+    Args:
+        engine: The SQLAlchemy engine to bind the session to.
+
+    Returns:
+        Session: A new SQLAlchemy session instance.
     """
     logging.info("Creating a new database session.")
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 
 
-def init_db(engine):
+def init_db(engine) -> None:
     """
     Initializes the database by creating all tables.
+
+    Args:
+        engine: The SQLAlchemy engine to use for creating the tables.
     """
     logging.info("Creating database tables.")
     Base.metadata.create_all(bind=engine)
@@ -65,8 +81,16 @@ def init_db(engine):
     create_view(engine)
 
 
-def create_view(engine):
-    """Creates a view in the database if it doesn't already exist."""
+def create_view(engine) -> None:
+    """
+    Creates a view in the database if it doesn't already exist.
+
+    Args:
+        engine: The SQLAlchemy engine to use for executing the SQL command.
+
+    Raises:
+        Exception: If the SQL command to create the view fails.
+    """
     with engine.connect() as connection:
         create_view_sql = """
             CREATE OR REPLACE VIEW precious_metals_prices_view AS
@@ -75,7 +99,6 @@ def create_view(engine):
         """
         try:
             connection.execute(text(create_view_sql))
-            connection.commit()
             logging.info("View 'precious_metals_prices_view' created successfully.")
         except Exception as e:
             logging.error(f"Failed to create view: {e}")

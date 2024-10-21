@@ -1,8 +1,11 @@
 import pytest
+
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+
 from src.db_operations.models import Base, PreciousMetalPrice
 from src.db_operations.db_connection import create_db_engine
-from datetime import datetime
+
 
 
 @pytest.fixture

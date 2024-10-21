@@ -5,10 +5,12 @@ from src.models.model import Model
 from src.log_info import setup_logging
 
 
-def main():
+def main() -> None:
+    """Main function to initialize the database, load data, train models, and save them."""
+    
     setup_logging()
 
-    # Step 1: Initialize database and create tables
+    # Step 1: Initialize the database and create tables
     logging.info("Initializing database...")
     try:
         engine = create_db_engine()
@@ -16,31 +18,30 @@ def main():
         logging.info("Database initialized successfully.")
     except Exception as e:
         logging.error(f"Error initializing the database: {e}")
-        return  # Stop execution if database initialization fails
+        return  # Exit if initialization fails
 
     # Step 2: Load metal price data into the database
     logging.info("Loading metal prices into the database...")
     try:
         load_data_into_db()
-        logging.info("Metal prices loaded into the database successfully.")
+        logging.info("Metal prices loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading metal prices: {e}")
-        return  # Stop execution if data loading fails
+        return  # Exit if loading fails
 
-    # Define the list of tickers (metal codes)
+    # Step 3: Define metal tickers and train models
     tickers = ["XAU", "XAG", "XPT", "XPD"]
     model_instance = Model(tickers)
 
-    # Train the models
     logging.info("Training models...")
     try:
         model_instance.train()
         logging.info("Models trained successfully.")
     except Exception as e:
         logging.error(f"Error during model training: {e}")
-        return  # Stop execution if model training fails
+        return  # Exit if training fails
 
-    # Save the trained models
+    # Step 4: Save the trained models
     try:
         model_instance.save("trained_models")
         logging.info("Trained models saved successfully.")

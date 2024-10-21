@@ -6,32 +6,39 @@ Base = declarative_base()
 
 
 class PreciousMetalPrice(Base):
+    """Represents the price of a precious metal at a given timestamp."""
+    
     __tablename__ = "precious_metals_prices"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    metal = Column(String(10), nullable=False, index=True)
-    price = Column(Float, nullable=False)
-    timestamp = Column(
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    metal: str = Column(String(10), nullable=False, index=True)
+    price: float = Column(Float, nullable=False)
+    timestamp: datetime.datetime = Column(
         DateTime,
         default=lambda: datetime.datetime.now(datetime.timezone.utc),
         nullable=False,
         index=True,
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Returns a string representation of the PreciousMetalPrice instance."""
         return f"<PreciousMetalPrice(metal='{self.metal}', price={self.price}, timestamp={self.timestamp})>"
 
 
-class ModelMetadata(Base):  # Assuming you have a Base class from SQLAlchemy
+class ModelMetadata(Base):
+    """Stores metadata for model training, including hyperparameters and parameters."""
+    
     __tablename__ = "model_training_metadata"
 
-    id = Column(Integer, primary_key=True)
-    metal = Column(String, nullable=False)
-    hyperparameters = Column(
-        JSON, nullable=False
-    )  # Use JSON or TEXT depending on your DB
-    parameters = Column(JSON, nullable=False)  # Same as above
-    timestamp = Column(DateTime, nullable=False)
+    id: int = Column(Integer, primary_key=True)
+    metal: str = Column(String, nullable=False)
+    hyperparameters: dict = Column(JSON, nullable=False)  # Using dict for JSON
+    parameters: dict = Column(JSON, nullable=False)  # Using dict for JSON
+    timestamp: datetime.datetime = Column(DateTime, nullable=False)
 
-    def __repr__(self):
-        return f"<ModelMetadata(metal='{self.metal}', hyperparameters={self.hyperparameters}, parameters={self.parameters}, timestamp={self.timestamp})>"
+    def __repr__(self) -> str:
+        """Returns a string representation of the ModelMetadata instance."""
+        return (f"<ModelMetadata(metal='{self.metal}', "
+                f"hyperparameters={self.hyperparameters}, "
+                f"parameters={self.parameters}, "
+                f"timestamp={self.timestamp})>")

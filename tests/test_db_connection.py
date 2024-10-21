@@ -1,4 +1,5 @@
 import pytest
+
 from sqlalchemy.exc import OperationalError
 from src.db_operations.db_connection import create_db_engine
 

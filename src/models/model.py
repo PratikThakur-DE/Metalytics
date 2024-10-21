@@ -1,12 +1,11 @@
-import numpy as np
 import pandas as pd
-import os
 import logging
 
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from pathlib import Path
 from sqlalchemy import text
+
 from src.db_operations.db_connection import create_db_engine
 from sktime.forecasting.arima import ARIMA
 from src.log_info import setup_logging
@@ -16,13 +15,25 @@ setup_logging()
 
 
 class Model:
+    """Class to manage and train ARIMA models for precious metal prices."""
+    
     def __init__(self, tickers: list[str]) -> None:
-        self.tickers = tickers
+        """
+        Initializes the Model instance.
+
+        Args:
+            tickers (list[str]): A list of ticker symbols for precious metals.
+        """
+        self.tickers: list[str] = tickers
         self.models: dict[str, ARIMA] = {}
-        self.arima_order = (1, 1, 0)  # Define ARIMA order explicitly as (p, d, q)
+        self.arima_order: tuple[int, int, int] = (1, 1, 0)  # ARIMA order (p, d, q)
 
     def fetch_data(self) -> pd.DataFrame:
-        """Fetches the last 12 hours of data for the specified tickers from the database view."""
+        """Fetches the last 12 hours of data for the specified tickers from the database view.
+
+        Returns:
+            pd.DataFrame: DataFrame containing metal prices indexed by timestamp.
+        """
         engine = create_db_engine()
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -31,12 +42,12 @@ class Model:
             twelve_hours_ago = datetime.utcnow() - timedelta(hours=12)
 
             query = text(
-                f"""
+                """
                 SELECT metal, price, timestamp
                 FROM precious_metals_prices_view
                 WHERE timestamp >= :twelve_hours_ago
                 AND metal IN :tickers
-            """
+                """
             )
 
             results = session.execute(
@@ -46,7 +57,7 @@ class Model:
 
             if not results:
                 logging.warning("No data fetched from the view.")
-                return pd.DataFrame()  # Return empty dataframe if no results
+                return pd.DataFrame()  # Return empty DataFrame if no results
 
             data = pd.DataFrame(results, columns=["metal", "price", "timestamp"])
             data["timestamp"] = pd.to_datetime(data["timestamp"])
@@ -58,20 +69,24 @@ class Model:
 
         except Exception as e:
             logging.error(f"Error fetching data: {e}")
-            return pd.DataFrame()  # Return empty dataframe in case of an error
+            return pd.DataFrame()  # Return empty DataFrame in case of an error
 
         finally:
             session.close()
 
-    def save_model_metadata(self, session, ticker: str, model: ARIMA):
-        """Save model hyperparameters and parameters into the database."""
+    def save_model_metadata(self, session: sessionmaker, ticker: str, model: ARIMA) -> None:
+        """Saves model hyperparameters and parameters into the database.
+
+        Args:
+            session (sessionmaker): The database session to use.
+            ticker (str): The ticker symbol of the metal.
+            model (ARIMA): The trained ARIMA model.
+        """
         try:
             fitted_params = model.get_fitted_params()
             logging.info(f"Fitted parameters for {ticker}: {fitted_params}")
 
-            order = (
-                self.arima_order
-            )  # This should hold the order you used, e.g., (1, 1, 0)
+            order = self.arima_order  # This holds the order you used, e.g., (1, 1, 0)
 
             # Extract parameters
             parameters = {
@@ -99,7 +114,7 @@ class Model:
             logging.error(f"Error while saving model metadata for {ticker}: {e}")
 
     def train(self) -> None:
-        """Train ARIMA models for each ticker using data from the last 12 hours."""
+        """Trains ARIMA models for each ticker using data from the last 12 hours."""
         engine = create_db_engine()
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -139,9 +154,7 @@ class Model:
         try:
             # Commit the session
             session.commit()
-            logging.info(
-                "Session committed successfully. Model metadata should be saved."
-            )
+            logging.info("Session committed successfully. Model metadata should be saved.")
         except Exception as e:
             logging.error(f"Failed to commit the session: {e}")
             session.rollback()
@@ -150,7 +163,11 @@ class Model:
             session.close()
 
     def save(self, path_to_dir: str | Path) -> None:
-        """Save the trained models to the specified directory."""
+        """Saves the trained models to the specified directory.
+
+        Args:
+            path_to_dir (str | Path): The directory path where models will be saved.
+        """
         path_to_dir = Path(path_to_dir)
         path_to_dir.mkdir(parents=True, exist_ok=True)
         for ticker in self.tickers:

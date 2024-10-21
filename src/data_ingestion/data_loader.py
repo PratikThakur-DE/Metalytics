@@ -2,12 +2,13 @@ import requests
 import datetime
 import os
 import logging
-
 from typing import Dict
-from src.db_operations.db_connection import create_db_engine
-from src.db_operations.models import PreciousMetalPrice
+
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+
+from src.db_operations.db_connection import create_db_engine
+from src.db_operations.models import PreciousMetalPrice
 from src.log_info import setup_logging
 
 setup_logging()
@@ -24,11 +25,12 @@ def fetch_metal_prices() -> Dict[str, float]:
     Fetches the latest metal prices from the MetalPrice API.
 
     Returns:
-        Dict[str, float]: A dictionary with metal codes (e.g., 'XAU', 'XAG') as keys
-                          and their respective prices as values.
+        Dict[str, float]: A dictionary with metal codes (e.g., 'XAU', 'XAG') 
+                          as keys and their respective prices as values.
 
     Raises:
-        Exception: If there is an error in fetching the data or an issue with the API response.
+        Exception: If there is an error in fetching the data or an issue 
+                   with the API response.
     """
     params = {
         "api_key": API_KEY,
@@ -64,8 +66,9 @@ def load_data_into_db() -> None:
     """
     Fetches metal prices and loads them into the database.
 
-    This function connects to the database, retrieves the metal prices using the
-    fetch_metal_prices function, and inserts the data into the 'PreciousMetalPrice' table.
+    This function connects to the database, retrieves the metal prices using 
+    the fetch_metal_prices function, and inserts the data into the 
+    'PreciousMetalPrice' table.
 
     Raises:
         Exception: If there is an issue saving data to the database.
@@ -87,7 +90,9 @@ def load_data_into_db() -> None:
 
                 # Create a new PreciousMetalPrice entry
                 metal_price = PreciousMetalPrice(
-                    metal=metal_code, price=price, timestamp=datetime.datetime.utcnow()
+                    metal=metal_code,
+                    price=price,
+                    timestamp=datetime.datetime.utcnow(),
                 )
                 session.add(metal_price)
 
