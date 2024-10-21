@@ -99,6 +99,7 @@ def create_view(engine) -> None:
         """
         try:
             connection.execute(text(create_view_sql))
+            connection.commit()
             logging.info("View 'precious_metals_prices_view' created successfully.")
         except Exception as e:
             logging.error(f"Failed to create view: {e}")
