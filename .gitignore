@@ -50,3 +50,7 @@ data/
 Dockerfile
 .dockerignore
 docker-compose.yml
+
+# Ignore backup folders
+trained_models/
+backup/
